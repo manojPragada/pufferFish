@@ -22,6 +22,17 @@ To record an endpoint you control: `python app.py record http://127.0.0.1:8000/d
 
 Run `python app.py --help` for available options.
 
+## Custom redaction and fixture validation
+
+Use repeatable, case-insensitive key globs on any command; these supplement the built-in sensitive names:
+
+```bash
+python app.py replay examples/response.json --redact-key '*_secret' --redact-key 'private-*'
+python app.py diff examples/response.json examples/response.json --redact-key '*_secret'
+```
+
+Patterns apply recursively to JSON keys and response headers; recording also applies them to URL query keys. Quote globs to prevent shell expansion. Replay now validates fixture version, response status, headers and body presence, then redacts before printing. Validation does not prove that a fixture is free of sensitive data.
+
 ## Development and verification
 
 ```bash
@@ -53,7 +64,7 @@ A single dependency-free module exposes importable core functions and a CLI entr
 
 ## Limitations
 
-Known-key redaction is not comprehensive secret detection. Review fixtures before sharing: custom field names, free text, URL paths and non-sensitive query fields can still contain private data. Only JSON responses are supported. No authentication injection, fault simulation or dashboard yet.
+Built-in and custom-key redaction is not comprehensive secret detection. Review fixtures before sharing: custom field names, free text, URL paths and non-sensitive query fields can still contain private data. Only JSON responses are supported. No authentication injection, fault simulation or dashboard yet.
 
 ## Running and deployment
 
@@ -71,3 +82,4 @@ Run locally from the repository using the commands above. No hosted deployment h
 Open an issue describing the observed behavior, expected result and a minimal synthetic example. Keep changes focused, include behavioral tests, run the checks above, and update this README when commands or capabilities change. Do not submit credentials or private input files.
 
 Implementation and synthetic examples are original to this repository. There are no third-party runtime dependencies or media assets. A redistribution license has not yet been selected; public visibility alone does not grant an open-source license.
+
