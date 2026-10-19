@@ -9,7 +9,7 @@
 ## Next
 
 - [x] Add configurable sensitive-key patterns and stronger fixture validation
-- [ ] Add HTTP mock replay with latency/status fault injection
+- [x] Add HTTP mock replay with latency/status fault injection
 - [ ] Build local fixture browser and response-diff dashboard
 
 ## Continuity
@@ -18,3 +18,6 @@ Initial foundation implemented and checked on 2026-10-17. Inspect current code a
 
 
 2026-10-18: Added additive case-insensitive key globs to record/replay/diff, plus replay fixture validation and redaction. Nine behavioral tests pass. Next: local HTTP mock replay and fault injection.
+
+
+2026-10-19: Added loopback-only GET/HEAD fixture server with fixed latency/status injection and redacted bodies. Recorded headers are omitted. Next: local fixture browser and response-diff dashboard.

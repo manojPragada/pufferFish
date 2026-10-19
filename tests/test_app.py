@@ -51,3 +51,4 @@ class Tests(unittest.TestCase):
             a.write_text(json.dumps({'client_secret':'oldvalue','public':1}));b.write_text(json.dumps({'client_secret':'newvalue','public':2}))
             result=subprocess.run([sys.executable,'app.py','diff',str(a),str(b),'--redact-key','*_secret'],capture_output=True,text=True)
             self.assertEqual(result.returncode,1);self.assertNotIn('oldvalue',result.stdout);self.assertNotIn('newvalue',result.stdout);self.assertIn('public',result.stdout)
+

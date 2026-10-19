@@ -33,6 +33,14 @@ python app.py diff examples/response.json examples/response.json --redact-key '*
 
 Patterns apply recursively to JSON keys and response headers; recording also applies them to URL query keys. Quote globs to prevent shell expansion. Replay now validates fixture version, response status, headers and body presence, then redacts before printing. Validation does not prove that a fixture is free of sensitive data.
 
+## Loopback HTTP mock and fault injection
+
+```bash
+python app.py serve examples/response.json --port 8766 --status 503 --delay-ms 250 --redact-key 'private_*'
+```
+
+Point a local client at `http://127.0.0.1:8766/any/path`. GET and HEAD replay one redacted JSON body for every path; no upstream requests are made. Stop with Ctrl+C. Binding is fixed to IPv4 loopback. Port 0 selects an ephemeral port and prints it. Delay is bounded to 0–30000 ms; final status is 200–599. Statuses 204, 205 and 304 omit the body. Recorded headers are not replayed: the server supplies JSON content type, content length and no-store only, apart from standard HTTP server headers. This is a local development server, not an authenticated or production service. It does not route multiple fixtures or simulate random failures.
+
 ## Development and verification
 
 ```bash
@@ -50,6 +58,7 @@ Configuration is provided through CLI arguments. No environment variables, `.env
 
 ```text
 app.py          CLI and core domain functions
+replay_server.py loopback fixture server
 examples/       synthetic example inputs (queue-lab uses commands above)
 tests/          behavioral unit tests
 ROADMAP.md      completed work and prioritized next steps
@@ -64,7 +73,7 @@ A single dependency-free module exposes importable core functions and a CLI entr
 
 ## Limitations
 
-Built-in and custom-key redaction is not comprehensive secret detection. Review fixtures before sharing: custom field names, free text, URL paths and non-sensitive query fields can still contain private data. Only JSON responses are supported. No authentication injection, fault simulation or dashboard yet.
+Built-in and custom-key redaction is not comprehensive secret detection. Review fixtures before sharing: custom field names, free text, URL paths and non-sensitive query fields can still contain private data. Only JSON responses are supported. No authentication injection or dashboard yet. Mock fault simulation supports fixed latency and status only.
 
 ## Running and deployment
 
@@ -82,4 +91,5 @@ Run locally from the repository using the commands above. No hosted deployment h
 Open an issue describing the observed behavior, expected result and a minimal synthetic example. Keep changes focused, include behavioral tests, run the checks above, and update this README when commands or capabilities change. Do not submit credentials or private input files.
 
 Implementation and synthetic examples are original to this repository. There are no third-party runtime dependencies or media assets. A redistribution license has not yet been selected; public visibility alone does not grant an open-source license.
+
 

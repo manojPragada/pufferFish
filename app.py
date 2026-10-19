@@ -73,6 +73,7 @@ def main():
     r=sub.add_parser('record');r.add_argument('url');r.add_argument('output')
     r=sub.add_parser('replay',help='Print a saved response offline; sends no requests');r.add_argument('fixture')
     r=sub.add_parser('diff');r.add_argument('before');r.add_argument('after')
+    r=sub.add_parser('serve',help='Serve a saved JSON body on loopback only');r.add_argument('fixture');r.add_argument('--port',type=int,default=8766);r.add_argument('--status',type=int);r.add_argument('--delay-ms',type=int,default=0)
     for command in sub.choices.values():
         command.add_argument('--redact-key', action='append', default=[], metavar='GLOB', help='Additional case-insensitive key glob; repeatable and additive to built-ins')
     a=p.parse_args()
@@ -81,6 +82,13 @@ def main():
             result=record(a.url, a.redact_key)
             # Exclusive creation prevents accidental fixture replacement.
             with open(a.output,'x',encoding='utf-8') as f: json.dump(result,f,indent=2)
+        elif a.command=='serve':
+            from replay_server import create_server
+            with open(a.fixture,encoding='utf-8') as f: fixture=json.load(f)
+            with create_server(fixture,a.port,a.status,a.delay_ms,a.redact_key) as server:
+                print(f'Mock listening on http://127.0.0.1:{server.server_port} (GET/HEAD, all paths)',flush=True)
+                try: server.serve_forever()
+                except KeyboardInterrupt: pass
         elif a.command=='replay':
             with open(a.fixture,encoding='utf-8') as f: result=redact(validate_fixture(json.load(f)), a.redact_key)
             print(json.dumps(result,indent=2))
@@ -92,4 +100,5 @@ def main():
     except (OSError,ValueError,KeyError) as exc:
         print(str(exc),file=sys.stderr);return 2
 if __name__=='__main__': sys.exit(main())
+
 
