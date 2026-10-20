@@ -33,3 +33,4 @@ class ServerTests(unittest.TestCase):
     def test_invalid_options_fail_before_binding(self):
         for options in [{'status':199},{'delay_ms':-1},{'delay_ms':30001},{'port':-1},{'status':True}]:
             with self.assertRaises(ValueError):create_server(self.fixture(),**options)
+

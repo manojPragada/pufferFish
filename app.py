@@ -66,6 +66,18 @@ def differences(old, new, path='$'):
             elif key not in new: result.append({'path':p,'kind':'removed','before':old[key]})
             else: result.extend(differences(old[key],new[key],p))
         return result
+    if isinstance(old, list):
+        # Positional comparison: insertions may shift following elements.
+        result = []
+        for index in range(max(len(old), len(new))):
+            item_path = f'{path}[{index}]'
+            if index >= len(old):
+                result.append({'path': item_path, 'kind': 'added', 'after': new[index]})
+            elif index >= len(new):
+                result.append({'path': item_path, 'kind': 'removed', 'before': old[index]})
+            else:
+                result.extend(differences(old[index], new[index], item_path))
+        return result
     if old != new: return [{'path':path,'before':old,'after':new}]
     return []
 def main():
@@ -100,5 +112,6 @@ def main():
     except (OSError,ValueError,KeyError) as exc:
         print(str(exc),file=sys.stderr);return 2
 if __name__=='__main__': sys.exit(main())
+
 
 

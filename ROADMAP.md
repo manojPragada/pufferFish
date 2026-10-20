@@ -14,6 +14,8 @@
 
 ## Continuity
 
+2026-10-20: Added recursive positional array diffs, precise nested paths, explicit additions/removals and CLI redaction regression coverage. Five new tests cover nested values, null, type changes and insertion semantics. Next: the local read-only fixture/diff dashboard; no dashboard is claimed by this change.
+
 Initial foundation implemented and checked on 2026-10-17. Inspect current code and commits before continuing. Prioritize the first unchecked item and keep improvements small enough to verify. No visual dashboard has been implemented.
 
 
@@ -21,3 +23,4 @@ Initial foundation implemented and checked on 2026-10-17. Inspect current code a
 
 
 2026-10-19: Added loopback-only GET/HEAD fixture server with fixed latency/status injection and redacted bodies. Recorded headers are omitted. Next: local fixture browser and response-diff dashboard.
+

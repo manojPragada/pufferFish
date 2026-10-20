@@ -18,6 +18,8 @@ Use `python3` if your system does not provide `python`. No package installation 
 
 ## Usage and behavior
 
+Structural diffs now descend into arrays, reporting exact paths such as `$["items"][0]["price"]`, with explicit added/removed entries. Arrays are compared by position, not identity or sequence alignment: inserting an item can report subsequent index changes. Inputs are redacted before comparison; unchanged secrets are not printed. JSON types remain distinct, including `true` versus `1`.
+
 To record an endpoint you control: `python app.py record http://127.0.0.1:8000/data fixture.json`. This sends a GET request, uses a ten-second timeout, refuses automatic redirects and caps the response at 1 MiB. Recording refuses to overwrite an existing file. Replay only prints the saved response; it does not run an HTTP mock server.
 
 Run `python app.py --help` for available options.
@@ -91,5 +93,6 @@ Run locally from the repository using the commands above. No hosted deployment h
 Open an issue describing the observed behavior, expected result and a minimal synthetic example. Keep changes focused, include behavioral tests, run the checks above, and update this README when commands or capabilities change. Do not submit credentials or private input files.
 
 Implementation and synthetic examples are original to this repository. There are no third-party runtime dependencies or media assets. A redistribution license has not yet been selected; public visibility alone does not grant an open-source license.
+
 
 

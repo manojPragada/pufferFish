@@ -52,3 +52,4 @@ class Tests(unittest.TestCase):
             result=subprocess.run([sys.executable,'app.py','diff',str(a),str(b),'--redact-key','*_secret'],capture_output=True,text=True)
             self.assertEqual(result.returncode,1);self.assertNotIn('oldvalue',result.stdout);self.assertNotIn('newvalue',result.stdout);self.assertIn('public',result.stdout)
 
+

@@ -44,3 +44,4 @@ def create_server(fixture, port=8766, status=None, delay_ms=0, patterns=()):
             pass
 
     return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+
