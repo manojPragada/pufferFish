@@ -86,6 +86,7 @@ def main():
     r=sub.add_parser('replay',help='Print a saved response offline; sends no requests');r.add_argument('fixture')
     r=sub.add_parser('diff');r.add_argument('before');r.add_argument('after')
     r=sub.add_parser('serve',help='Serve a saved JSON body on loopback only');r.add_argument('fixture');r.add_argument('--port',type=int,default=8766);r.add_argument('--status',type=int);r.add_argument('--delay-ms',type=int,default=0)
+    r=sub.add_parser('dashboard',help='Browse and compare a directory of fixtures on loopback');r.add_argument('directory');r.add_argument('--port',type=int,default=8765)
     for command in sub.choices.values():
         command.add_argument('--redact-key', action='append', default=[], metavar='GLOB', help='Additional case-insensitive key glob; repeatable and additive to built-ins')
     a=p.parse_args()
@@ -99,6 +100,12 @@ def main():
             with open(a.fixture,encoding='utf-8') as f: fixture=json.load(f)
             with create_server(fixture,a.port,a.status,a.delay_ms,a.redact_key) as server:
                 print(f'Mock listening on http://127.0.0.1:{server.server_port} (GET/HEAD, all paths)',flush=True)
+                try: server.serve_forever()
+                except KeyboardInterrupt: pass
+        elif a.command=='dashboard':
+            from dashboard import create_dashboard
+            with create_dashboard(a.directory,a.port,a.redact_key) as server:
+                print(f'Dashboard listening on http://127.0.0.1:{server.server_port}',flush=True)
                 try: server.serve_forever()
                 except KeyboardInterrupt: pass
         elif a.command=='replay':

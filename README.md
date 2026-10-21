@@ -2,7 +2,7 @@
 
 Record bounded JSON GET responses, redact known credential keys, inspect responses offline, and compare JSON structurally.
 
-**Status:** runnable CLI foundation. No hosted demo or dashboard is available yet. Examples use synthetic offline data. Python 3.10+; standard library only. Validated with Python 3.12.
+**Status:** runnable CLI and local read-only dashboard. No hosted demo is available. Examples use synthetic offline data. Python 3.10+; standard library only. Validated with Python 3.12.
 
 ## Quick start
 
@@ -43,6 +43,14 @@ python app.py serve examples/response.json --port 8766 --status 503 --delay-ms 2
 
 Point a local client at `http://127.0.0.1:8766/any/path`. GET and HEAD replay one redacted JSON body for every path; no upstream requests are made. Stop with Ctrl+C. Binding is fixed to IPv4 loopback. Port 0 selects an ephemeral port and prints it. Delay is bounded to 0–30000 ms; final status is 200–599. Statuses 204, 205 and 304 omit the body. Recorded headers are not replayed: the server supplies JSON content type, content length and no-store only, apart from standard HTTP server headers. This is a local development server, not an authenticated or production service. It does not route multiple fixtures or simulate random failures.
 
+## Local fixture dashboard
+
+```bash
+python app.py dashboard examples --port 8765
+```
+
+Open http://127.0.0.1:8765, then choose fixtures to preview or compare. The server binds only to IPv4 loopback, reads top-level `.json` files from the chosen directory, validates fixture structure and redacts sensitive keys before sending JSON to the page. The responsive interface makes no external requests. It is read-only: it cannot record, edit, delete or serve fixtures as mocks.
+
 ## Development and verification
 
 ```bash
@@ -61,6 +69,8 @@ Configuration is provided through CLI arguments. No environment variables, `.env
 ```text
 app.py          CLI and core domain functions
 replay_server.py loopback fixture server
+dashboard.py    loopback dashboard server and safe fixture loading
+dashboard/      dependency-free responsive browser UI
 examples/       synthetic example inputs (queue-lab uses commands above)
 tests/          behavioral unit tests
 ROADMAP.md      completed work and prioritized next steps
