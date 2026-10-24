@@ -11,9 +11,12 @@
 - [x] Add configurable sensitive-key patterns and stronger fixture validation
 - [x] Add HTTP mock replay with latency/status fault injection
 - [x] Build local fixture browser and response-diff dashboard
-- [ ] Add multi-route fixture collections and request matching
+- [x] Add multi-route fixture collections and request matching
+- [ ] Add bounded request header/body matching
 
 ## Continuity
+
+2026-10-24: Added bounded multi-route fixture collections with exact GET/HEAD path matching, duplicate rejection and safe JSON 404 responses. Legacy fixtures remain wildcard-compatible. Next: explicitly allowlisted request header/body matching without storing secrets.
 
 2026-10-21: Added a loopback-only, read-only fixture dashboard with responsive UI, fixture previews, structural comparisons, pre-delivery redaction, traversal protection and API tests. Next: multi-route fixture collections and request matching.
 

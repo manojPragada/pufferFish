@@ -41,7 +41,9 @@ Patterns apply recursively to JSON keys and response headers; recording also app
 python app.py serve examples/response.json --port 8766 --status 503 --delay-ms 250 --redact-key 'private_*'
 ```
 
-Point a local client at `http://127.0.0.1:8766/any/path`. GET and HEAD replay one redacted JSON body for every path; no upstream requests are made. Stop with Ctrl+C. Binding is fixed to IPv4 loopback. Port 0 selects an ephemeral port and prints it. Delay is bounded to 0–30000 ms; final status is 200–599. Statuses 204, 205 and 304 omit the body. Recorded headers are not replayed: the server supplies JSON content type, content length and no-store only, apart from standard HTTP server headers. This is a local development server, not an authenticated or production service. It does not route multiple fixtures or simulate random failures.
+Point a local client at `http://127.0.0.1:8766/any/path`. A legacy fixture replays one redacted JSON body for every GET/HEAD path; no upstream requests are made. Stop with Ctrl+C. Binding is fixed to IPv4 loopback. Port 0 selects an ephemeral port and prints it. Delay is bounded to 0–30000 ms; final status is 200–599. Statuses 204, 205 and 304 omit the body. Recorded headers are not replayed: the server supplies JSON content type, content length and no-store only, apart from standard HTTP server headers. This is a local development server, not an authenticated or production service. It does not simulate random failures.
+
+The serve command also accepts `{"version":1,"routes":[...]}`. Each route is a normal fixture whose `request` contains an exact `method` (`GET` or `HEAD`) and absolute `path`; query strings are ignored for matching. Collections are capped at 100 routes, reject duplicate method/path pairs, and return a safe JSON 404 when unmatched.
 
 ## Local fixture dashboard
 

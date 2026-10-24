@@ -4,15 +4,15 @@ from threading import Thread
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from unittest.mock import patch
-from replay_server import create_server
+from replay_server import create_server,compile_routes
 
 class ServerTests(unittest.TestCase):
     def fixture(self):
         return {'version':1,'response':{'status':200,'headers':{'Set-Cookie':'do-not-replay'},'body':{'token':'secret','private_key':'custom','ok':True}}}
-    def request(self, server, method='GET'):
+    def request(self, server, method='GET',path='/any/path'):
         thread=Thread(target=server.serve_forever,daemon=True);thread.start()
         try:
-            request=Request(f'http://127.0.0.1:{server.server_port}/any/path',method=method)
+            request=Request(f'http://127.0.0.1:{server.server_port}{path}',method=method)
             try: response=urlopen(request,timeout=2)
             except HTTPError as error:response=error
             with response:return response.status,dict(response.headers),response.read()
@@ -33,4 +33,15 @@ class ServerTests(unittest.TestCase):
     def test_invalid_options_fail_before_binding(self):
         for options in [{'status':199},{'delay_ms':-1},{'delay_ms':30001},{'port':-1},{'status':True}]:
             with self.assertRaises(ValueError):create_server(self.fixture(),**options)
+    def test_collection_matches_exact_method_and_path(self):
+        first=self.fixture();first['request']={'method':'GET','path':'/users'};first['response']['body']={'route':'users'}
+        second=self.fixture();second['request']={'method':'GET','path':'/health'};second['response']['body']={'route':'health'}
+        collection={'version':1,'routes':[first,second]}
+        code,_,raw=self.request(create_server(collection,port=0),path='/health?ignored=yes');self.assertEqual((code,json.loads(raw)),(200,{'route':'health'}))
+        code,_,raw=self.request(create_server(collection,port=0),path='/missing');self.assertEqual(code,404);self.assertEqual(json.loads(raw)['path'],'/missing')
+    def test_collection_rejects_duplicates_and_unsafe_routes(self):
+        item=self.fixture();item['request']={'method':'GET','path':'/same'}
+        with self.assertRaisesRegex(ValueError,'Duplicate'):compile_routes({'version':1,'routes':[item,item]})
+        item['request']['path']='relative'
+        with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
 
