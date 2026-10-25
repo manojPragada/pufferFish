@@ -12,9 +12,12 @@
 - [x] Add HTTP mock replay with latency/status fault injection
 - [x] Build local fixture browser and response-diff dashboard
 - [x] Add multi-route fixture collections and request matching
-- [ ] Add bounded request header/body matching
+- [x] Add bounded allowlisted request-header matching
+- [ ] Evaluate opt-in JSON request-body matching without retaining secrets
 
 ## Continuity
+
+2026-10-25: Added bounded exact matching for Accept, Content-Type and X-Puffer-* request headers. Sensitive/arbitrary headers and request bodies remain unsupported; the most-specific match wins. Next: evaluate opt-in JSON body matching with redaction-first storage semantics.
 
 2026-10-24: Added bounded multi-route fixture collections with exact GET/HEAD path matching, duplicate rejection and safe JSON 404 responses. Legacy fixtures remain wildcard-compatible. Next: explicitly allowlisted request header/body matching without storing secrets.
 

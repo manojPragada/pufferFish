@@ -5,23 +5,39 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from app import redact, validate_fixture
 
+SAFE_MATCH_HEADERS={'accept','content-type'}
+
+def _compile_match_headers(request):
+    headers=request.get('match_headers',{})
+    if not isinstance(headers,dict) or len(headers)>10:
+        raise ValueError('match_headers must be an object with at most 10 entries')
+    compiled={}
+    for name,value in headers.items():
+        normalized=name.lower() if isinstance(name,str) else ''
+        if normalized not in SAFE_MATCH_HEADERS and not normalized.startswith('x-puffer-'):
+            raise ValueError('Only Accept, Content-Type and X-Puffer-* headers may be matched')
+        if not isinstance(value,str) or len(value)>256 or '\r' in value or '\n' in value:
+            raise ValueError('Matched header values must be strings of at most 256 characters')
+        compiled[normalized]=value
+    return compiled
+
 def compile_routes(fixture):
     """Validate either one legacy fixture or a bounded exact-match collection."""
     if isinstance(fixture,dict) and 'routes' in fixture:
         routes=fixture.get('routes')
         if fixture.get('version')!=1 or not isinstance(routes,list) or not 1<=len(routes)<=100:
             raise ValueError('Route collection must have version 1 and 1–100 routes')
-        compiled={}
+        compiled=[];seen=set()
         for item in routes:
             if not isinstance(item,dict):raise ValueError('Each route must be a fixture object')
             request=item.get('request',{});method=request.get('method');path=request.get('path')
             if method not in ('GET','HEAD') or not isinstance(path,str) or not path.startswith('/') or '?' in path or '#' in path:
                 raise ValueError('Route requests require GET/HEAD and an absolute path without query or fragment')
-            key=(method,path)
-            if key in compiled:raise ValueError(f'Duplicate route: {method} {path}')
-            compiled[key]=validate_fixture(item)
+            headers=_compile_match_headers(request);key=(method,path,tuple(sorted(headers.items())))
+            if key in seen:raise ValueError(f'Duplicate route: {method} {path}')
+            seen.add(key);compiled.append((method,path,headers,validate_fixture(item)))
         return compiled
-    return {('*','*'):validate_fixture(fixture)}
+    return [('*','*',{},validate_fixture(fixture))]
 
 
 def create_server(fixture, port=8766, status=None, delay_ms=0, patterns=()):
@@ -37,7 +53,13 @@ def create_server(fixture, port=8766, status=None, delay_ms=0, patterns=()):
             if delay_ms:
                 time.sleep(delay_ms / 1000)
             path=urlsplit(self.path).path
-            response=routes.get((self.command,path)) or (routes.get(('GET',path)) if head else None) or routes.get(('*','*'))
+            candidates=[]
+            for method,route_path,headers,fixture_response in routes:
+                method_matches=method==self.command or (head and method=='GET') or method=='*'
+                if method_matches and (route_path==path or route_path=='*'):
+                    if all(self.headers.get(name)==value for name,value in headers.items()):
+                        candidates.append((len(headers),fixture_response))
+            response=max(candidates,key=lambda item:item[0])[1] if candidates else None
             if response is None:
                 code=404;payload=json.dumps({'error':'No fixture matched','method':self.command,'path':path}).encode('utf-8')
             else:

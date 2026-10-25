@@ -9,10 +9,10 @@ from replay_server import create_server,compile_routes
 class ServerTests(unittest.TestCase):
     def fixture(self):
         return {'version':1,'response':{'status':200,'headers':{'Set-Cookie':'do-not-replay'},'body':{'token':'secret','private_key':'custom','ok':True}}}
-    def request(self, server, method='GET',path='/any/path'):
+    def request(self, server, method='GET',path='/any/path',headers=None):
         thread=Thread(target=server.serve_forever,daemon=True);thread.start()
         try:
-            request=Request(f'http://127.0.0.1:{server.server_port}{path}',method=method)
+            request=Request(f'http://127.0.0.1:{server.server_port}{path}',method=method,headers=headers or {})
             try: response=urlopen(request,timeout=2)
             except HTTPError as error:response=error
             with response:return response.status,dict(response.headers),response.read()
@@ -43,5 +43,16 @@ class ServerTests(unittest.TestCase):
         item=self.fixture();item['request']={'method':'GET','path':'/same'}
         with self.assertRaisesRegex(ValueError,'Duplicate'):compile_routes({'version':1,'routes':[item,item]})
         item['request']['path']='relative'
+        with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
+    def test_collection_matches_explicit_safe_headers(self):
+        default=self.fixture();default['request']={'method':'GET','path':'/users'};default['response']['body']={'variant':'default'}
+        mobile=self.fixture();mobile['request']={'method':'GET','path':'/users','match_headers':{'X-Puffer-Variant':'mobile'}};mobile['response']['body']={'variant':'mobile'}
+        server=create_server({'version':1,'routes':[default,mobile]},port=0)
+        code,_,raw=self.request(server,path='/users',headers={'X-Puffer-Variant':'mobile'})
+        self.assertEqual((code,json.loads(raw)),(200,{'variant':'mobile'}))
+    def test_collection_rejects_sensitive_or_malformed_header_matchers(self):
+        item=self.fixture();item['request']={'method':'GET','path':'/','match_headers':{'Authorization':'secret'}}
+        with self.assertRaisesRegex(ValueError,'Only Accept'):compile_routes({'version':1,'routes':[item]})
+        item['request']['match_headers']={'X-Puffer-Test':'bad\nvalue'}
         with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
 
