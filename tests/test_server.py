@@ -9,10 +9,10 @@ from replay_server import create_server,compile_routes
 class ServerTests(unittest.TestCase):
     def fixture(self):
         return {'version':1,'response':{'status':200,'headers':{'Set-Cookie':'do-not-replay'},'body':{'token':'secret','private_key':'custom','ok':True}}}
-    def request(self, server, method='GET',path='/any/path',headers=None):
+    def request(self, server, method='GET',path='/any/path',headers=None,data=None):
         thread=Thread(target=server.serve_forever,daemon=True);thread.start()
         try:
-            request=Request(f'http://127.0.0.1:{server.server_port}{path}',method=method,headers=headers or {})
+            request=Request(f'http://127.0.0.1:{server.server_port}{path}',method=method,headers=headers or {},data=data)
             try: response=urlopen(request,timeout=2)
             except HTTPError as error:response=error
             with response:return response.status,dict(response.headers),response.read()
@@ -54,5 +54,13 @@ class ServerTests(unittest.TestCase):
         item=self.fixture();item['request']={'method':'GET','path':'/','match_headers':{'Authorization':'secret'}}
         with self.assertRaisesRegex(ValueError,'Only Accept'):compile_routes({'version':1,'routes':[item]})
         item['request']['match_headers']={'X-Puffer-Test':'bad\nvalue'}
+        with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
+    def test_post_body_digest_matches_without_storing_body(self):
+        import hashlib
+        body=b'{"mode":"safe"}';item=self.fixture();item['request']={'method':'POST','path':'/run','body_sha256':hashlib.sha256(body).hexdigest()};item['response']['body']={'matched':True}
+        collection={'version':1,'routes':[item]};code,_,raw=self.request(create_server(collection,port=0),method='POST',path='/run',data=body)
+        self.assertEqual((code,json.loads(raw)),(200,{'matched':True}));self.assertNotIn('mode',repr(compile_routes(collection)))
+    def test_body_digest_is_post_only_and_strict(self):
+        item=self.fixture();item['request']={'method':'GET','path':'/','body_sha256':'0'*64}
         with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
 

@@ -13,9 +13,11 @@
 - [x] Build local fixture browser and response-diff dashboard
 - [x] Add multi-route fixture collections and request matching
 - [x] Add bounded allowlisted request-header matching
-- [ ] Evaluate opt-in JSON request-body matching without retaining secrets
+- [x] Add opt-in request-body digest matching without retaining body content
 
 ## Continuity
+
+2026-10-26: Added bounded POST replay selected by an optional lowercase SHA-256 body digest. The server hashes at most 1 MiB in memory and neither stores nor echoes request content. Next: add fixture-authoring guidance or helper tooling for safe digest generation.
 
 2026-10-25: Added bounded exact matching for Accept, Content-Type and X-Puffer-* request headers. Sensitive/arbitrary headers and request bodies remain unsupported; the most-specific match wins. Next: evaluate opt-in JSON body matching with redaction-first storage semantics.
 

@@ -1,6 +1,8 @@
 """Loopback-only fixture server. No upstream requests or recorded-header replay."""
 import json
 import time
+import hashlib
+import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from app import redact, validate_fixture
@@ -31,13 +33,15 @@ def compile_routes(fixture):
         for item in routes:
             if not isinstance(item,dict):raise ValueError('Each route must be a fixture object')
             request=item.get('request',{});method=request.get('method');path=request.get('path')
-            if method not in ('GET','HEAD') or not isinstance(path,str) or not path.startswith('/') or '?' in path or '#' in path:
-                raise ValueError('Route requests require GET/HEAD and an absolute path without query or fragment')
-            headers=_compile_match_headers(request);key=(method,path,tuple(sorted(headers.items())))
+            if method not in ('GET','HEAD','POST') or not isinstance(path,str) or not path.startswith('/') or '?' in path or '#' in path:
+                raise ValueError('Route requests require GET/HEAD/POST and an absolute path without query or fragment')
+            digest=request.get('body_sha256')
+            if digest is not None and (method!='POST' or not isinstance(digest,str) or re.fullmatch(r'[0-9a-f]{64}',digest) is None):raise ValueError('body_sha256 requires POST and a lowercase SHA-256 digest')
+            headers=_compile_match_headers(request);key=(method,path,tuple(sorted(headers.items())),digest)
             if key in seen:raise ValueError(f'Duplicate route: {method} {path}')
-            seen.add(key);compiled.append((method,path,headers,validate_fixture(item)))
+            seen.add(key);compiled.append((method,path,headers,digest,validate_fixture(item)))
         return compiled
-    return [('*','*',{},validate_fixture(fixture))]
+    return [('*','*',{},None,validate_fixture(fixture))]
 
 
 def create_server(fixture, port=8766, status=None, delay_ms=0, patterns=()):
@@ -53,12 +57,15 @@ def create_server(fixture, port=8766, status=None, delay_ms=0, patterns=()):
             if delay_ms:
                 time.sleep(delay_ms / 1000)
             path=urlsplit(self.path).path
+            length=int(self.headers.get('Content-Length','0')) if self.command=='POST' else 0
+            if length<0 or length>1_048_576:self.send_error(413);return
+            body_digest=hashlib.sha256(self.rfile.read(length)).hexdigest() if self.command=='POST' else None
             candidates=[]
-            for method,route_path,headers,fixture_response in routes:
+            for method,route_path,headers,expected_digest,fixture_response in routes:
                 method_matches=method==self.command or (head and method=='GET') or method=='*'
                 if method_matches and (route_path==path or route_path=='*'):
-                    if all(self.headers.get(name)==value for name,value in headers.items()):
-                        candidates.append((len(headers),fixture_response))
+                    if all(self.headers.get(name)==value for name,value in headers.items()) and (expected_digest is None or expected_digest==body_digest):
+                        candidates.append((len(headers)+int(expected_digest is not None),fixture_response))
             response=max(candidates,key=lambda item:item[0])[1] if candidates else None
             if response is None:
                 code=404;payload=json.dumps({'error':'No fixture matched','method':self.command,'path':path}).encode('utf-8')
@@ -83,6 +90,9 @@ def create_server(fixture, port=8766, status=None, delay_ms=0, patterns=()):
 
         def do_HEAD(self):
             self.respond(head=True)
+
+        def do_POST(self):
+            self.respond()
 
         def log_message(self, *args):
             pass
