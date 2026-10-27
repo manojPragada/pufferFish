@@ -18,6 +18,8 @@ Use `python3` if your system does not provide `python`. No package installation 
 
 ## Usage and behavior
 
+Generate the optional POST body digest without copying request content into a fixture: `python app.py body-digest request.json`. Input is capped at 1 MiB; only the lowercase SHA-256 digest is printed.
+
 Structural diffs now descend into arrays, reporting exact paths such as `$["items"][0]["price"]`, with explicit added/removed entries. Arrays are compared by position, not identity or sequence alignment: inserting an item can report subsequent index changes. Inputs are redacted before comparison; unchanged secrets are not printed. JSON types remain distinct, including `true` versus `1`.
 
 To record an endpoint you control: `python app.py record http://127.0.0.1:8000/data fixture.json`. This sends a GET request, uses a ten-second timeout, refuses automatic redirects and caps the response at 1 MiB. Recording refuses to overwrite an existing file. Replay only prints the saved response; it does not run an HTTP mock server.

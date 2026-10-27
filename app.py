@@ -1,5 +1,6 @@
 """Local JSON HTTP fixtures with conservative credential redaction."""
 import argparse
+import hashlib
 from fnmatch import fnmatchcase
 import json
 import sys
@@ -80,6 +81,11 @@ def differences(old, new, path='$'):
         return result
     if old != new: return [{'path':path,'before':old,'after':new}]
     return []
+def body_digest(path):
+    with open(path,'rb') as source:
+        raw=source.read(1_048_577)
+    if len(raw)>1_048_576:raise ValueError('Request body exceeds 1 MiB')
+    return hashlib.sha256(raw).hexdigest()
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
     r=sub.add_parser('record');r.add_argument('url');r.add_argument('output')
@@ -87,10 +93,12 @@ def main():
     r=sub.add_parser('diff');r.add_argument('before');r.add_argument('after')
     r=sub.add_parser('serve',help='Serve a saved JSON body on loopback only');r.add_argument('fixture');r.add_argument('--port',type=int,default=8766);r.add_argument('--status',type=int);r.add_argument('--delay-ms',type=int,default=0)
     r=sub.add_parser('dashboard',help='Browse and compare a directory of fixtures on loopback');r.add_argument('directory');r.add_argument('--port',type=int,default=8765)
+    r=sub.add_parser('body-digest',help='Print a SHA-256 digest for a local request body without storing its content');r.add_argument('file')
     for command in sub.choices.values():
         command.add_argument('--redact-key', action='append', default=[], metavar='GLOB', help='Additional case-insensitive key glob; repeatable and additive to built-ins')
     a=p.parse_args()
     try:
+        if a.command=='body-digest':print(body_digest(a.file));return 0
         if a.command=='record':
             result=record(a.url, a.redact_key)
             # Exclusive creation prevents accidental fixture replacement.

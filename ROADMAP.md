@@ -14,8 +14,11 @@
 - [x] Add multi-route fixture collections and request matching
 - [x] Add bounded allowlisted request-header matching
 - [x] Add opt-in request-body digest matching without retaining body content
+- [x] Add bounded local helper for safe body-digest fixture authoring
 
 ## Continuity
+
+2026-10-27: Added a bounded `body-digest` command that hashes at most 1 MiB from a local file without storing or echoing its content. Next: consider a fixture-authoring command that preserves exclusive creation and redaction guarantees.
 
 2026-10-26: Added bounded POST replay selected by an optional lowercase SHA-256 body digest. The server hashes at most 1 MiB in memory and neither stores nor echoes request content. Next: add fixture-authoring guidance or helper tooling for safe digest generation.
 
