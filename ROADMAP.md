@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-10-28: Added exclusive-output `fixture-route` authoring for one safe GET/HEAD/POST route, including optional validated POST digest matching without copying body content. Next: bounded append support with duplicate-route rejection.
+
 2026-10-27: Added a bounded `body-digest` command that hashes at most 1 MiB from a local file without storing or echoing its content. Next: consider a fixture-authoring command that preserves exclusive creation and redaction guarantees.
 
 2026-10-26: Added bounded POST replay selected by an optional lowercase SHA-256 body digest. The server hashes at most 1 MiB in memory and neither stores nor echoes request content. Next: add fixture-authoring guidance or helper tooling for safe digest generation.

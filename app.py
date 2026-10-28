@@ -86,6 +86,14 @@ def body_digest(path):
         raw=source.read(1_048_577)
     if len(raw)>1_048_576:raise ValueError('Request body exceeds 1 MiB')
     return hashlib.sha256(raw).hexdigest()
+def route_fixture(fixture,method,path,body_sha256=None):
+    response=validate_fixture(fixture);method=method.upper()
+    if method not in {'GET','HEAD','POST'} or not isinstance(path,str) or not path.startswith('/') or '?' in path or '#' in path:raise ValueError('Route requires GET/HEAD/POST and an absolute path without query or fragment')
+    route={'method':method,'path':path,'response':response}
+    if body_sha256 is not None:
+        if method!='POST' or len(body_sha256)!=64 or any(ch not in '0123456789abcdef' for ch in body_sha256):raise ValueError('Body digest requires POST and 64 lowercase hex characters')
+        route['body_sha256']=body_sha256
+    return {'version':1,'routes':[route]}
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
     r=sub.add_parser('record');r.add_argument('url');r.add_argument('output')
@@ -94,11 +102,16 @@ def main():
     r=sub.add_parser('serve',help='Serve a saved JSON body on loopback only');r.add_argument('fixture');r.add_argument('--port',type=int,default=8766);r.add_argument('--status',type=int);r.add_argument('--delay-ms',type=int,default=0)
     r=sub.add_parser('dashboard',help='Browse and compare a directory of fixtures on loopback');r.add_argument('directory');r.add_argument('--port',type=int,default=8765)
     r=sub.add_parser('body-digest',help='Print a SHA-256 digest for a local request body without storing its content');r.add_argument('file')
+    r=sub.add_parser('fixture-route',help='Create a one-route collection from an existing fixture');r.add_argument('fixture');r.add_argument('output');r.add_argument('--method',default='GET');r.add_argument('--path',default='/');r.add_argument('--body-sha256')
     for command in sub.choices.values():
         command.add_argument('--redact-key', action='append', default=[], metavar='GLOB', help='Additional case-insensitive key glob; repeatable and additive to built-ins')
     a=p.parse_args()
     try:
         if a.command=='body-digest':print(body_digest(a.file));return 0
+        if a.command=='fixture-route':
+            with open(a.fixture,encoding='utf-8') as f:result=route_fixture(json.load(f),a.method,a.path,a.body_sha256)
+            with open(a.output,'x',encoding='utf-8') as f:json.dump(result,f,indent=2)
+            return 0
         if a.command=='record':
             result=record(a.url, a.redact_key)
             # Exclusive creation prevents accidental fixture replacement.
