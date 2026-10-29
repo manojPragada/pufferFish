@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-10-29: Corrected `fixture-route` output to use the replay server's validated request envelope, with an interoperability regression test for paths and POST digests. Next: bounded append support with duplicate-route rejection.
+
 2026-10-28: Added exclusive-output `fixture-route` authoring for one safe GET/HEAD/POST route, including optional validated POST digest matching without copying body content. Next: bounded append support with duplicate-route rejection.
 
 2026-10-27: Added a bounded `body-digest` command that hashes at most 1 MiB from a local file without storing or echoing its content. Next: consider a fixture-authoring command that preserves exclusive creation and redaction guarantees.

@@ -18,7 +18,7 @@ Use `python3` if your system does not provide `python`. No package installation 
 
 ## Usage and behavior
 
-Create a one-route collection from an existing fixture with `python app.py fixture-route fixture.json routes.json --method GET --path /health`. Output uses exclusive creation; POST digests must be lowercase SHA-256 values.
+Create a replay-compatible one-route collection from an existing fixture with `python app.py fixture-route fixture.json routes.json --method GET --path /health`. Output uses exclusive creation and the same validated request envelope as the server; POST digests must be lowercase SHA-256 values.
 
 Generate the optional POST body digest without copying request content into a fixture: `python app.py body-digest request.json`. Input is capped at 1 MiB; only the lowercase SHA-256 digest is printed.
 

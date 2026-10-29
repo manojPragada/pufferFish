@@ -89,10 +89,11 @@ def body_digest(path):
 def route_fixture(fixture,method,path,body_sha256=None):
     response=validate_fixture(fixture);method=method.upper()
     if method not in {'GET','HEAD','POST'} or not isinstance(path,str) or not path.startswith('/') or '?' in path or '#' in path:raise ValueError('Route requires GET/HEAD/POST and an absolute path without query or fragment')
-    route={'method':method,'path':path,'response':response}
+    request={'method':method,'path':path}
+    route={'request':request,'response':response,'version':1}
     if body_sha256 is not None:
         if method!='POST' or len(body_sha256)!=64 or any(ch not in '0123456789abcdef' for ch in body_sha256):raise ValueError('Body digest requires POST and 64 lowercase hex characters')
-        route['body_sha256']=body_sha256
+        request['body_sha256']=body_sha256
     return {'version':1,'routes':[route]}
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
