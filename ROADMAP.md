@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-10-30: Added bounded, copy-on-write `fixture-append` authoring with source validation, duplicate rejection, the existing 100-route cap and exclusive output creation. Next: consider allowlisted match-header authoring without accepting sensitive headers.
+
 2026-10-29: Corrected `fixture-route` output to use the replay server's validated request envelope, with an interoperability regression test for paths and POST digests. Next: bounded append support with duplicate-route rejection.
 
 2026-10-28: Added exclusive-output `fixture-route` authoring for one safe GET/HEAD/POST route, including optional validated POST digest matching without copying body content. Next: bounded append support with duplicate-route rejection.

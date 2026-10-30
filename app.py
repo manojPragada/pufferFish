@@ -95,6 +95,15 @@ def route_fixture(fixture,method,path,body_sha256=None):
         if method!='POST' or len(body_sha256)!=64 or any(ch not in '0123456789abcdef' for ch in body_sha256):raise ValueError('Body digest requires POST and 64 lowercase hex characters')
         request['body_sha256']=body_sha256
     return {'version':1,'routes':[route]}
+def append_route(collection,fixture,method,path,body_sha256=None):
+    from replay_server import compile_routes
+    compile_routes(collection)
+    routes=collection.get('routes')
+    if not isinstance(routes,list) or len(routes)>=100:raise ValueError('Route collection must contain fewer than 100 routes before append')
+    candidate=route_fixture(fixture,method,path,body_sha256)['routes'][0]
+    result={'version':1,'routes':[*routes,candidate]}
+    compile_routes(result)
+    return result
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
     r=sub.add_parser('record');r.add_argument('url');r.add_argument('output')
@@ -104,6 +113,7 @@ def main():
     r=sub.add_parser('dashboard',help='Browse and compare a directory of fixtures on loopback');r.add_argument('directory');r.add_argument('--port',type=int,default=8765)
     r=sub.add_parser('body-digest',help='Print a SHA-256 digest for a local request body without storing its content');r.add_argument('file')
     r=sub.add_parser('fixture-route',help='Create a one-route collection from an existing fixture');r.add_argument('fixture');r.add_argument('output');r.add_argument('--method',default='GET');r.add_argument('--path',default='/');r.add_argument('--body-sha256')
+    r=sub.add_parser('fixture-append',help='Create a new collection by safely appending one route');r.add_argument('collection');r.add_argument('fixture');r.add_argument('output');r.add_argument('--method',default='GET');r.add_argument('--path',default='/');r.add_argument('--body-sha256')
     for command in sub.choices.values():
         command.add_argument('--redact-key', action='append', default=[], metavar='GLOB', help='Additional case-insensitive key glob; repeatable and additive to built-ins')
     a=p.parse_args()
@@ -111,6 +121,12 @@ def main():
         if a.command=='body-digest':print(body_digest(a.file));return 0
         if a.command=='fixture-route':
             with open(a.fixture,encoding='utf-8') as f:result=route_fixture(json.load(f),a.method,a.path,a.body_sha256)
+            with open(a.output,'x',encoding='utf-8') as f:json.dump(result,f,indent=2)
+            return 0
+        if a.command=='fixture-append':
+            with open(a.collection,encoding='utf-8') as f:collection=json.load(f)
+            with open(a.fixture,encoding='utf-8') as f:fixture=json.load(f)
+            result=append_route(collection,fixture,a.method,a.path,a.body_sha256)
             with open(a.output,'x',encoding='utf-8') as f:json.dump(result,f,indent=2)
             return 0
         if a.command=='record':
