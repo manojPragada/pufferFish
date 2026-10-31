@@ -18,7 +18,7 @@ Use `python3` if your system does not provide `python`. No package installation 
 
 ## Usage and behavior
 
-Create a replay-compatible one-route collection from an existing fixture with `python app.py fixture-route fixture.json routes.json --method GET --path /health`. Output uses exclusive creation and the same validated request envelope as the server; POST digests must be lowercase SHA-256 values.
+Create a replay-compatible one-route collection from an existing fixture with `python app.py fixture-route fixture.json routes.json --method GET --path /health`. Repeat `--match-header 'Accept=application/json'` or use `X-Puffer-*` names for safe exact header matching. Authorization, cookies and arbitrary headers are rejected by the replay validator. Output uses exclusive creation and the same validated request envelope as the server; POST digests must be lowercase SHA-256 values.
 
 Append one route without modifying the source collection: `python app.py fixture-append routes.json fixture.json expanded-routes.json --method GET --path /ready`. The new output is created exclusively, both collections are replay-validated, duplicate matchers are rejected, and the 100-route cap still applies.
 
