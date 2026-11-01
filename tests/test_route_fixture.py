@@ -19,3 +19,6 @@ class RouteFixtureTests(unittest.TestCase):
   result=route_fixture(FIXTURE,'GET','/',None,['accept=application/json','X-Puffer-Mode=test']);self.assertEqual(compile_routes(result)[0][2],{'accept':'application/json','x-puffer-mode':'test'})
   with self.assertRaisesRegex(ValueError,'Only Accept'):route_fixture(FIXTURE,'GET','/',None,['Authorization=secret'])
   with self.assertRaisesRegex(ValueError,'unique'):route_fixture(FIXTURE,'GET','/',None,['Accept=a','accept=b'])
+ def test_rejects_unbounded_or_control_character_paths(self):
+  for path in ('/'+('x'*2048),'/line\nbreak'):
+   with self.assertRaisesRegex(ValueError,'bounded absolute path'):route_fixture(FIXTURE,'GET',path)

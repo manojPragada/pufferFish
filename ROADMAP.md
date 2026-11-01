@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-01: Bounded authored and loaded route paths to 2,048 characters and rejected control characters before matching. This keeps route collections safe for the local HTTP server without changing exact-match semantics. Next: keep authoring deliberately narrower than raw fixture editing.
+
 2026-10-31: Added repeatable `--match-header NAME=VALUE` authoring to both route commands, delegated to the replay server's existing allowlist and bounds so credentials and arbitrary headers remain rejected. Next: keep authoring deliberately narrower than raw fixture editing.
 
 2026-10-30: Added bounded, copy-on-write `fixture-append` authoring with source validation, duplicate rejection, the existing 100-route cap and exclusive output creation. Next: consider allowlisted match-header authoring without accepting sensitive headers.

@@ -33,8 +33,8 @@ def compile_routes(fixture):
         for item in routes:
             if not isinstance(item,dict):raise ValueError('Each route must be a fixture object')
             request=item.get('request',{});method=request.get('method');path=request.get('path')
-            if method not in ('GET','HEAD','POST') or not isinstance(path,str) or not path.startswith('/') or '?' in path or '#' in path:
-                raise ValueError('Route requests require GET/HEAD/POST and an absolute path without query or fragment')
+            if method not in ('GET','HEAD','POST') or not isinstance(path,str) or not path.startswith('/') or len(path)>2048 or '?' in path or '#' in path or any(ord(ch)<32 for ch in path):
+                raise ValueError('Route requests require GET/HEAD/POST and a bounded absolute path without controls, query or fragment')
             digest=request.get('body_sha256')
             if digest is not None and (method!='POST' or not isinstance(digest,str) or re.fullmatch(r'[0-9a-f]{64}',digest) is None):raise ValueError('body_sha256 requires POST and a lowercase SHA-256 digest')
             headers=_compile_match_headers(request);key=(method,path,tuple(sorted(headers.items())),digest)
