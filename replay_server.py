@@ -39,6 +39,10 @@ def compile_routes(fixture):
             if digest is not None and (method!='POST' or not isinstance(digest,str) or re.fullmatch(r'[0-9a-f]{64}',digest) is None):raise ValueError('body_sha256 requires POST and a lowercase SHA-256 digest')
             headers=_compile_match_headers(request);key=(method,path,tuple(sorted(headers.items())),digest)
             if key in seen:raise ValueError(f'Duplicate route: {method} {path}')
+            for old_method,old_path,old_headers,old_digest,_ in compiled:
+                compatible=all(name not in old_headers or old_headers[name]==value for name,value in headers.items())
+                if method==old_method and path==old_path and digest==old_digest and len(headers)==len(old_headers) and compatible:
+                    raise ValueError(f'Ambiguous equal-specificity route: {method} {path}')
             seen.add(key);compiled.append((method,path,headers,digest,validate_fixture(item)))
         return compiled
     return [('*','*',{},None,validate_fixture(fixture))]
