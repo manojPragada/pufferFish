@@ -40,8 +40,10 @@ def compile_routes(fixture):
             headers=_compile_match_headers(request);key=(method,path,tuple(sorted(headers.items())),digest)
             if key in seen:raise ValueError(f'Duplicate route: {method} {path}')
             for old_method,old_path,old_headers,old_digest,_ in compiled:
-                compatible=all(name not in old_headers or old_headers[name]==value for name,value in headers.items())
-                if method==old_method and path==old_path and digest==old_digest and len(headers)==len(old_headers) and compatible:
+                headers_compatible=all(name not in old_headers or old_headers[name]==value for name,value in headers.items())
+                digests_compatible=digest is None or old_digest is None or digest==old_digest
+                specificity=len(headers)+int(digest is not None);old_specificity=len(old_headers)+int(old_digest is not None)
+                if method==old_method and path==old_path and specificity==old_specificity and headers_compatible and digests_compatible:
                     raise ValueError(f'Ambiguous equal-specificity route: {method} {path}')
             seen.add(key);compiled.append((method,path,headers,digest,validate_fixture(item)))
         return compiled

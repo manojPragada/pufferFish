@@ -10,6 +10,8 @@ class ServerTests(unittest.TestCase):
     def test_collection_rejects_ambiguous_equal_specificity_routes(self):
         collection={'version':1,'routes':[{'version':1,'request':{'method':'GET','path':'/x','match_headers':{'Accept':'application/json'}},'response':{'status':200,'headers':{},'body':{}}},{'version':1,'request':{'method':'GET','path':'/x','match_headers':{'X-Puffer-Mode':'test'}},'response':{'status':200,'headers':{},'body':{}}}]}
         with self.assertRaisesRegex(ValueError,'Ambiguous equal-specificity'):compile_routes(collection)
+        digest='a'*64;collection={'version':1,'routes':[{'version':1,'request':{'method':'POST','path':'/x','match_headers':{'Accept':'application/json'}},'response':{'status':200,'headers':{},'body':{}}},{'version':1,'request':{'method':'POST','path':'/x','body_sha256':digest},'response':{'status':200,'headers':{},'body':{}}}]}
+        with self.assertRaisesRegex(ValueError,'Ambiguous equal-specificity'):compile_routes(collection)
     def fixture(self):
         return {'version':1,'response':{'status':200,'headers':{'Set-Cookie':'do-not-replay'},'body':{'token':'secret','private_key':'custom','ok':True}}}
     def request(self, server, method='GET',path='/any/path',headers=None,data=None):

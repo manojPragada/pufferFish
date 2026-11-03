@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-03: Extended equal-specificity ambiguity rejection across header and body-digest matchers, closing an order-dependent tie when one route matched a header and another matched the same request body. Next: keep authoring deliberately narrower than raw fixture editing.
+
 2026-11-02: Rejected overlapping equal-specificity replay routes, preventing route order from silently deciding which fixture wins when header matchers are simultaneously satisfiable. Next: keep authoring deliberately narrower than raw fixture editing.
 
 2026-11-01: Bounded authored and loaded route paths to 2,048 characters and rejected control characters before matching. This keeps route collections safe for the local HTTP server without changing exact-match semantics. Next: keep authoring deliberately narrower than raw fixture editing.
