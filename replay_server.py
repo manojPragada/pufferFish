@@ -16,7 +16,7 @@ def _compile_match_headers(request):
     compiled={}
     for name,value in headers.items():
         normalized=name.lower() if isinstance(name,str) else ''
-        if normalized not in SAFE_MATCH_HEADERS and not normalized.startswith('x-puffer-'):
+        if normalized not in SAFE_MATCH_HEADERS and re.fullmatch(r'x-puffer-[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?',normalized) is None:
             raise ValueError('Only Accept, Content-Type and X-Puffer-* headers may be matched')
         if not isinstance(value,str) or len(value)>256 or '\r' in value or '\n' in value:
             raise ValueError('Matched header values must be strings of at most 256 characters')

@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-04: Tightened custom matcher names to bounded, well-formed `X-Puffer-*` fields, rejecting empty suffixes, repeated separators and oversized names before replay. Next: keep authoring deliberately narrower than raw fixture editing.
+
 2026-11-03: Extended equal-specificity ambiguity rejection across header and body-digest matchers, closing an order-dependent tie when one route matched a header and another matched the same request body. Next: keep authoring deliberately narrower than raw fixture editing.
 
 2026-11-02: Rejected overlapping equal-specificity replay routes, preventing route order from silently deciding which fixture wins when header matchers are simultaneously satisfiable. Next: keep authoring deliberately narrower than raw fixture editing.

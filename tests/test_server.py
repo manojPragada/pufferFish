@@ -60,6 +60,9 @@ class ServerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Only Accept'):compile_routes({'version':1,'routes':[item]})
         item['request']['match_headers']={'X-Puffer-Test':'bad\nvalue'}
         with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
+        for name in ('X-Puffer-','X-Puffer--Mode','X-Puffer-'+('a'*65)):
+            item['request']['match_headers']={name:'test'}
+            with self.assertRaisesRegex(ValueError,'Only Accept'):compile_routes({'version':1,'routes':[item]})
     def test_post_body_digest_matches_without_storing_body(self):
         import hashlib
         body=b'{"mode":"safe"}';item=self.fixture();item['request']={'method':'POST','path':'/run','body_sha256':hashlib.sha256(body).hexdigest()};item['response']['body']={'matched':True}
