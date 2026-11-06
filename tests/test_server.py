@@ -58,8 +58,9 @@ class ServerTests(unittest.TestCase):
     def test_collection_rejects_sensitive_or_malformed_header_matchers(self):
         item=self.fixture();item['request']={'method':'GET','path':'/','match_headers':{'Authorization':'secret'}}
         with self.assertRaisesRegex(ValueError,'Only Accept'):compile_routes({'version':1,'routes':[item]})
-        item['request']['match_headers']={'X-Puffer-Test':'bad\nvalue'}
-        with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
+        for value in ('bad\nvalue','bad\tvalue','bad\x00value','bad\x7fvalue'):
+            item['request']['match_headers']={'X-Puffer-Test':value}
+            with self.assertRaisesRegex(ValueError,'control-free'):compile_routes({'version':1,'routes':[item]})
         for name in ('X-Puffer-','X-Puffer--Mode','X-Puffer-Mode--Debug','X-Puffer-'+('a'*65)):
             item['request']['match_headers']={name:'test'}
             with self.assertRaisesRegex(ValueError,'Only Accept'):compile_routes({'version':1,'routes':[item]})

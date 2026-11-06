@@ -53,7 +53,7 @@ The serve command also accepts `{"version":1,"routes":[...]}`. Each route is a n
 
 ## Local fixture dashboard
 
-Custom matcher names use a bounded `X-Puffer-Name` form: 1–64 suffix characters, alphanumeric ends, and no repeated hyphen anywhere in the suffix.
+Custom matcher names use a bounded `X-Puffer-Name` form: 1–64 suffix characters, alphanumeric ends, and no repeated hyphen anywhere in the suffix. Matcher values are capped at 256 characters and reject ASCII control characters, including tabs and DEL, keeping authored and hand-edited collections under the same narrow replay contract.
 
 ```bash
 python app.py dashboard examples --port 8765
