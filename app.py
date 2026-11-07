@@ -88,7 +88,7 @@ def body_digest(path):
     return hashlib.sha256(raw).hexdigest()
 def route_fixture(fixture,method,path,body_sha256=None,match_headers=()):
     response=validate_fixture(fixture);method=method.upper()
-    if method not in {'GET','HEAD','POST'} or not isinstance(path,str) or not path.startswith('/') or len(path)>2048 or '?' in path or '#' in path or any(ord(ch)<32 for ch in path):raise ValueError('Route requires GET/HEAD/POST and a bounded absolute path without controls, query or fragment')
+    if method not in {'GET','HEAD','POST'} or not isinstance(path,str) or not path.startswith('/') or len(path)>2048 or '?' in path or '#' in path or any(ord(ch)<32 or ord(ch)==127 for ch in path):raise ValueError('Route requires GET/HEAD/POST and a bounded absolute path without controls, query or fragment')
     request={'method':method,'path':path}
     route={'request':request,'response':response,'version':1}
     if body_sha256 is not None:

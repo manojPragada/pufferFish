@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-07: Closed the route-path validation gap for ASCII DEL in both authored and hand-edited collections, matching the documented control-free contract. Next: keep fixture authoring deliberately narrower than raw editing.
+
 2026-11-06: Rejected every ASCII control character, including tabs and DEL, from exact header matcher values in both authored and hand-edited route collections. Next: keep fixture authoring deliberately narrower than raw editing.
 
 2026-11-05: Tightened custom matcher names to reject repeated hyphens anywhere in the `X-Puffer-*` suffix, keeping authored and hand-edited collections under the same conservative grammar. Next: keep authoring deliberately narrower than raw fixture editing.

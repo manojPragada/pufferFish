@@ -21,5 +21,5 @@ class RouteFixtureTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'unique'):route_fixture(FIXTURE,'GET','/',None,['Accept=a','accept=b'])
   with self.assertRaisesRegex(ValueError,'control-free'):route_fixture(FIXTURE,'GET','/',None,['X-Puffer-Mode=bad\tvalue'])
  def test_rejects_unbounded_or_control_character_paths(self):
-  for path in ('/'+('x'*2048),'/line\nbreak'):
+  for path in ('/'+('x'*2048),'/line\nbreak','/delete\x7fmarker'):
    with self.assertRaisesRegex(ValueError,'bounded absolute path'):route_fixture(FIXTURE,'GET',path)

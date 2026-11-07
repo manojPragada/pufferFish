@@ -49,6 +49,8 @@ class ServerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Duplicate'):compile_routes({'version':1,'routes':[item,item]})
         item['request']['path']='relative'
         with self.assertRaises(ValueError):compile_routes({'version':1,'routes':[item]})
+        item['request']['path']='/delete\x7fmarker'
+        with self.assertRaisesRegex(ValueError,'without controls'):compile_routes({'version':1,'routes':[item]})
     def test_collection_matches_explicit_safe_headers(self):
         default=self.fixture();default['request']={'method':'GET','path':'/users'};default['response']['body']={'variant':'default'}
         mobile=self.fixture();mobile['request']={'method':'GET','path':'/users','match_headers':{'X-Puffer-Variant':'mobile'}};mobile['response']['body']={'variant':'mobile'}
