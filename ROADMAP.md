@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-08: Rejected unsupported or malformed route request fields instead of silently ignoring them, preventing hand-edited fixtures from appearing to match on credentials or other unimplemented inputs. Next: keep fixture authoring deliberately narrower than raw editing.
+
 2026-11-07: Closed the route-path validation gap for ASCII DEL in both authored and hand-edited collections, matching the documented control-free contract. Next: keep fixture authoring deliberately narrower than raw editing.
 
 2026-11-06: Rejected every ASCII control character, including tabs and DEL, from exact header matcher values in both authored and hand-edited route collections. Next: keep fixture authoring deliberately narrower than raw editing.

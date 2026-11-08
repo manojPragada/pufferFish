@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 from app import redact, validate_fixture
 
 SAFE_MATCH_HEADERS={'accept','content-type'}
+ROUTE_REQUEST_FIELDS={'method','path','match_headers','body_sha256'}
 
 def _compile_match_headers(request):
     headers=request.get('match_headers',{})
@@ -32,7 +33,10 @@ def compile_routes(fixture):
         compiled=[];seen=set()
         for item in routes:
             if not isinstance(item,dict):raise ValueError('Each route must be a fixture object')
-            request=item.get('request',{});method=request.get('method');path=request.get('path')
+            request=item.get('request',{})
+            if not isinstance(request,dict) or set(request)-ROUTE_REQUEST_FIELDS:
+                raise ValueError('Route request contains unsupported matcher fields')
+            method=request.get('method');path=request.get('path')
             if method not in ('GET','HEAD','POST') or not isinstance(path,str) or not path.startswith('/') or len(path)>2048 or '?' in path or '#' in path or any(ord(ch)<32 or ord(ch)==127 for ch in path):
                 raise ValueError('Route requests require GET/HEAD/POST and a bounded absolute path without controls, query or fragment')
             digest=request.get('body_sha256')
