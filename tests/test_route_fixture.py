@@ -1,5 +1,5 @@
 import unittest
-from app import append_route, route_fixture
+from app import append_route, fixture_check, route_fixture
 from replay_server import compile_routes
 FIXTURE={'version':1,'response':{'status':200,'headers':{},'body':{'ok':True}}}
 class RouteFixtureTests(unittest.TestCase):
@@ -23,3 +23,8 @@ class RouteFixtureTests(unittest.TestCase):
  def test_rejects_unbounded_or_control_character_paths(self):
   for path in ('/'+('x'*2048),'/line\nbreak','/delete\x7fmarker'):
    with self.assertRaisesRegex(ValueError,'bounded absolute path'):route_fixture(FIXTURE,'GET',path)
+ def test_fixture_check_reports_capabilities_without_matcher_content(self):
+  collection=append_route(route_fixture(FIXTURE,'GET','/health'),FIXTURE,'POST','/submit','0'*64)
+  self.assertEqual(fixture_check(collection),{'kind':'route collection','routes':2,'methods':['GET','POST']})
+  self.assertEqual(fixture_check(FIXTURE),{'kind':'legacy fixture','routes':1,'methods':['GET','HEAD']})
+  with self.assertRaises(ValueError):fixture_check({'version':1,'routes':[]})

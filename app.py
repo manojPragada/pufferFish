@@ -114,6 +114,14 @@ def append_route(collection,fixture,method,path,body_sha256=None,match_headers=(
     result={'version':1,'routes':[*routes,candidate]}
     compile_routes(result)
     return result
+def fixture_check(collection):
+    """Validate replay input and return a content-free capability summary."""
+    from replay_server import compile_routes
+    compiled=compile_routes(collection)
+    methods={method for method,_,_,_,_ in compiled}
+    if methods=={'*'}:
+        return {'kind':'legacy fixture','routes':1,'methods':['GET','HEAD']}
+    return {'kind':'route collection','routes':len(compiled),'methods':sorted(methods)}
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
     r=sub.add_parser('record');r.add_argument('url');r.add_argument('output')
@@ -124,6 +132,7 @@ def main():
     r=sub.add_parser('body-digest',help='Print a SHA-256 digest for a local request body without storing its content');r.add_argument('file')
     r=sub.add_parser('fixture-route',help='Create a one-route collection from an existing fixture');r.add_argument('fixture');r.add_argument('output');r.add_argument('--method',default='GET');r.add_argument('--path',default='/');r.add_argument('--body-sha256');r.add_argument('--match-header',action='append',default=[],metavar='NAME=VALUE')
     r=sub.add_parser('fixture-append',help='Create a new collection by safely appending one route');r.add_argument('collection');r.add_argument('fixture');r.add_argument('output');r.add_argument('--method',default='GET');r.add_argument('--path',default='/');r.add_argument('--body-sha256');r.add_argument('--match-header',action='append',default=[],metavar='NAME=VALUE')
+    r=sub.add_parser('fixture-check',help='Validate replay input and print a content-free route summary');r.add_argument('fixture')
     for command in sub.choices.values():
         command.add_argument('--redact-key', action='append', default=[], metavar='GLOB', help='Additional case-insensitive key glob; repeatable and additive to built-ins')
     a=p.parse_args()
@@ -139,6 +148,9 @@ def main():
             result=append_route(collection,fixture,a.method,a.path,a.body_sha256,a.match_header)
             with open(a.output,'x',encoding='utf-8') as f:json.dump(result,f,indent=2)
             return 0
+        if a.command=='fixture-check':
+            with open(a.fixture,encoding='utf-8') as f:result=fixture_check(json.load(f))
+            print(json.dumps(result,indent=2));return 0
         if a.command=='record':
             result=record(a.url, a.redact_key)
             # Exclusive creation prevents accidental fixture replacement.

@@ -22,6 +22,8 @@ Create a replay-compatible one-route collection from an existing fixture with `p
 
 Append one route without modifying the source collection: `python app.py fixture-append routes.json fixture.json expanded-routes.json --method GET --path /ready`. The new output is created exclusively, both collections are replay-validated, duplicate matchers are rejected, and the 100-route cap still applies.
 
+Validate a hand-edited fixture or collection before serving it with `python app.py fixture-check routes.json`. The command exercises the complete replay validator and prints only the input kind, route count and supported methods; it never prints response bodies, header values, paths or digests.
+
 Generate the optional POST body digest without copying request content into a fixture: `python app.py body-digest request.json`. Input is capped at 1 MiB; only the lowercase SHA-256 digest is printed.
 
 Structural diffs now descend into arrays, reporting exact paths such as `$["items"][0]["price"]`, with explicit added/removed entries. Arrays are compared by position, not identity or sequence alignment: inserting an item can report subsequent index changes. Inputs are redacted before comparison; unchanged secrets are not printed. JSON types remain distinct, including `true` versus `1`.
@@ -95,7 +97,7 @@ A single dependency-free module exposes importable core functions and a CLI entr
 
 ## Limitations
 
-Built-in and custom-key redaction is not comprehensive secret detection. Review fixtures before sharing: custom field names, free text, URL paths and non-sensitive query fields can still contain private data. Only JSON responses are supported. No authentication injection or dashboard yet. Mock fault simulation supports fixed latency and status only.
+Built-in and custom-key redaction is not comprehensive secret detection. Review fixtures before sharing: custom field names, free text, URL paths and non-sensitive query fields can still contain private data. Only JSON responses are supported. The dashboard is read-only and there is no authentication injection. Mock fault simulation supports fixed latency and status only.
 
 ## Running and deployment
 

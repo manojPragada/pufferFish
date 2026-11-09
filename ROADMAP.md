@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-09: Added a read-only `fixture-check` command that runs the complete replay validator and reports only fixture kind, route count and methods, never paths, matcher values, digests or response content. Next: keep fixture authoring deliberately narrower than raw editing.
+
 2026-11-08: Rejected unsupported or malformed route request fields instead of silently ignoring them, preventing hand-edited fixtures from appearing to match on credentials or other unimplemented inputs. Next: keep fixture authoring deliberately narrower than raw editing.
 
 2026-11-07: Closed the route-path validation gap for ASCII DEL in both authored and hand-edited collections, matching the documented control-free contract. Next: keep fixture authoring deliberately narrower than raw editing.
