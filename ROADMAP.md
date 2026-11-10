@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-10: Added content-free fixture capability inspection to the local dashboard. The API and UI expose only validated fixture kind, route count and supported methods—never paths, matcher values, digests or response content. Next: keep dashboard authoring read-only and any future fixture authoring narrower than raw editing.
+
 2026-11-09: Added a read-only `fixture-check` command that runs the complete replay validator and reports only fixture kind, route count and methods, never paths, matcher values, digests or response content. Next: keep fixture authoring deliberately narrower than raw editing.
 
 2026-11-08: Rejected unsupported or malformed route request fields instead of silently ignoring them, preventing hand-edited fixtures from appearing to match on credentials or other unimplemented inputs. Next: keep fixture authoring deliberately narrower than raw editing.

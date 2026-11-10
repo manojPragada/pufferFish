@@ -3,7 +3,7 @@ from pathlib import Path
 from threading import Thread
 from urllib.request import urlopen
 from urllib.error import HTTPError
-from dashboard import create_dashboard,fixture_files,load_fixture
+from dashboard import check_fixture,create_dashboard,fixture_files,load_fixture
 
 class DashboardTests(unittest.TestCase):
     def write(self,root,name,body): Path(root,name).write_text(json.dumps({'version':1,'response':{'status':200,'headers':{},'body':body}}))
@@ -20,5 +20,12 @@ class DashboardTests(unittest.TestCase):
             try:
                 with urlopen(base+'/api/fixtures') as response:self.assertEqual(json.load(response)['fixtures'],['after.json','before.json'])
                 with urlopen(base+'/api/diff?before=before.json&after=after.json') as response:self.assertEqual(json.load(response)['changes'][0]['path'],'$["response"]["body"]["value"]')
+                with urlopen(base+'/api/check?name=before.json') as response:self.assertEqual(json.load(response),{'kind':'legacy fixture','routes':1,'methods':['GET','HEAD']})
                 with self.assertRaises(HTTPError):urlopen(base+'/api/fixture?name=../before.json')
             finally:server.shutdown();server.server_close();thread.join()
+    def test_content_free_dashboard_check(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write(root,'private.json',{'token':'never-show','path':'/private'})
+            summary=check_fixture(root,'private.json')
+            self.assertEqual(summary,{'kind':'legacy fixture','routes':1,'methods':['GET','HEAD']})
+            self.assertNotIn('never-show',json.dumps(summary));self.assertNotIn('/private',json.dumps(summary))

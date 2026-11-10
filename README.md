@@ -63,6 +63,8 @@ python app.py dashboard examples --port 8765
 
 Open http://127.0.0.1:8765, then choose fixtures to preview or compare. The server binds only to IPv4 loopback, reads top-level `.json` files from the chosen directory, validates fixture structure and redacts sensitive keys before sending JSON to the page. The responsive interface makes no external requests. It is read-only: it cannot record, edit, delete or serve fixtures as mocks.
 
+The selected fixture also shows a content-free capability summary with fixture kind, route count and supported methods. That summary never includes route paths, matcher values, digests or response content.
+
 ## Development and verification
 
 ```bash

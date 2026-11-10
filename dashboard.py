@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from app import differences, redact, validate_fixture
+from app import differences, fixture_check, redact, validate_fixture
 
 ASSETS = Path(__file__).with_name('dashboard')
 MIME = {'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8'}
@@ -21,6 +21,15 @@ def load_fixture(root, name, patterns=()):
     validate_fixture(fixture)
     return redact(fixture, patterns)
 
+def check_fixture(root, name):
+    """Return validated capabilities without fixture paths, matchers or response data."""
+    if not isinstance(name, str) or Path(name).name != name or not name.endswith('.json'):
+        raise ValueError('Invalid fixture name')
+    path = Path(root) / name
+    if not path.is_file(): raise ValueError('Fixture not found')
+    with path.open(encoding='utf-8') as handle: fixture = json.load(handle)
+    return fixture_check(fixture)
+
 def create_dashboard(root, port=8765, patterns=()):
     root = Path(root).resolve()
     if not root.is_dir(): raise ValueError('Fixture directory not found')
@@ -34,6 +43,7 @@ def create_dashboard(root, port=8765, patterns=()):
             try:
                 if parsed.path == '/api/fixtures': return self.send_json(200,{'fixtures':fixture_files(root)})
                 if parsed.path == '/api/fixture': return self.send_json(200,load_fixture(root,parse_qs(parsed.query).get('name',[''])[0],patterns))
+                if parsed.path == '/api/check': return self.send_json(200,check_fixture(root,parse_qs(parsed.query).get('name',[''])[0]))
                 if parsed.path == '/api/diff':
                     query=parse_qs(parsed.query);before=load_fixture(root,query.get('before',[''])[0],patterns);after=load_fixture(root,query.get('after',[''])[0],patterns)
                     return self.send_json(200,{'changes':differences(before,after)})
