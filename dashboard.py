@@ -30,6 +30,14 @@ def check_fixture(root, name):
     with path.open(encoding='utf-8') as handle: fixture = json.load(handle)
     return fixture_check(fixture)
 
+def diff_summary(changes):
+    """Return content-free change counts for the dashboard."""
+    summary = {'total': len(changes), 'added': 0, 'removed': 0, 'changed': 0}
+    for change in changes:
+        kind = change.get('kind')
+        summary[kind if kind in {'added', 'removed'} else 'changed'] += 1
+    return summary
+
 def create_dashboard(root, port=8765, patterns=()):
     root = Path(root).resolve()
     if not root.is_dir(): raise ValueError('Fixture directory not found')
@@ -46,7 +54,8 @@ def create_dashboard(root, port=8765, patterns=()):
                 if parsed.path == '/api/check': return self.send_json(200,check_fixture(root,parse_qs(parsed.query).get('name',[''])[0]))
                 if parsed.path == '/api/diff':
                     query=parse_qs(parsed.query);before=load_fixture(root,query.get('before',[''])[0],patterns);after=load_fixture(root,query.get('after',[''])[0],patterns)
-                    return self.send_json(200,{'changes':differences(before,after)})
+                    changes=differences(before,after)
+                    return self.send_json(200,{'changes':changes,'summary':diff_summary(changes)})
                 asset='index.html' if parsed.path=='/' else parsed.path.removeprefix('/')
                 if asset not in {'index.html','style.css','app.js'}: return self.send_json(404,{'error':'Not found'})
                 body=(ASSETS/asset).read_bytes();return self.send_bytes(200,body,MIME[Path(asset).suffix])
