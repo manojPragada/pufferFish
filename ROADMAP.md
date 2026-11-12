@@ -18,6 +18,8 @@
 
 ## Continuity
 
+2026-11-12: Split the dashboard's content-free changed count into same-type value changes and JSON type changes while preserving the existing total. The API and UI expose counts only, never paths or values. Next: keep dashboard authoring read-only and any future fixture authoring narrower than raw editing.
+
 2026-11-11: Added a content-free diff summary to the dashboard API and UI, separating added, removed and changed counts without including paths or values in the summary. Detailed redacted local paths remain available in the existing comparison list. Next: keep dashboard authoring read-only and any future fixture authoring narrower than raw editing.
 
 2026-11-10: Added content-free fixture capability inspection to the local dashboard. The API and UI expose only validated fixture kind, route count and supported methods—never paths, matcher values, digests or response content. Next: keep dashboard authoring read-only and any future fixture authoring narrower than raw editing.

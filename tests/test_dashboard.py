@@ -20,7 +20,7 @@ class DashboardTests(unittest.TestCase):
             try:
                 with urlopen(base+'/api/fixtures') as response:self.assertEqual(json.load(response)['fixtures'],['after.json','before.json'])
                 with urlopen(base+'/api/diff?before=before.json&after=after.json') as response:
-                    result=json.load(response);self.assertEqual(result['changes'][0]['path'],'$["response"]["body"]["value"]');self.assertEqual(result['summary'],{'total':1,'added':0,'removed':0,'changed':1})
+                    result=json.load(response);self.assertEqual(result['changes'][0]['path'],'$["response"]["body"]["value"]');self.assertEqual(result['summary'],{'total':1,'added':0,'removed':0,'changed':1,'type_changed':0,'value_changed':1})
                 with urlopen(base+'/api/check?name=before.json') as response:self.assertEqual(json.load(response),{'kind':'legacy fixture','routes':1,'methods':['GET','HEAD']})
                 with self.assertRaises(HTTPError):urlopen(base+'/api/fixture?name=../before.json')
             finally:server.shutdown();server.server_close();thread.join()
@@ -31,8 +31,8 @@ class DashboardTests(unittest.TestCase):
             self.assertEqual(summary,{'kind':'legacy fixture','routes':1,'methods':['GET','HEAD']})
             self.assertNotIn('never-show',json.dumps(summary));self.assertNotIn('/private',json.dumps(summary))
     def test_diff_summary_counts_kinds_without_values_or_paths(self):
-        changes=[{'path':'$["private"]','before':'never-show','after':'changed'},{'path':'$["new"]','kind':'added','after':'secret'},{'path':'$["old"]','kind':'removed','before':'secret'}]
+        changes=[{'path':'$["private"]','before':'never-show','after':'changed'},{'path':'$["type"]','before':1,'after':'one'},{'path':'$["new"]','kind':'added','after':'secret'},{'path':'$["old"]','kind':'removed','before':'secret'}]
         summary=diff_summary(changes)
-        self.assertEqual(summary,{'total':3,'added':1,'removed':1,'changed':1})
+        self.assertEqual(summary,{'total':4,'added':1,'removed':1,'changed':2,'type_changed':1,'value_changed':1})
         serialized=json.dumps(summary)
         self.assertNotIn('never-show',serialized);self.assertNotIn('private',serialized)

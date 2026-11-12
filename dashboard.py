@@ -32,10 +32,16 @@ def check_fixture(root, name):
 
 def diff_summary(changes):
     """Return content-free change counts for the dashboard."""
-    summary = {'total': len(changes), 'added': 0, 'removed': 0, 'changed': 0}
+    summary = {'total': len(changes), 'added': 0, 'removed': 0, 'changed': 0,
+               'type_changed': 0, 'value_changed': 0}
     for change in changes:
         kind = change.get('kind')
-        summary[kind if kind in {'added', 'removed'} else 'changed'] += 1
+        if kind in {'added', 'removed'}:
+            summary[kind] += 1
+        else:
+            summary['changed'] += 1
+            bucket = 'type_changed' if type(change.get('before')) is not type(change.get('after')) else 'value_changed'
+            summary[bucket] += 1
     return summary
 
 def create_dashboard(root, port=8765, patterns=()):
